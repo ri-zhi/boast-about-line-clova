@@ -1,0 +1,106 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var context_1 = require("./context");
+var SkillConfigurator = /** @class */ (function () {
+    function SkillConfigurator() {
+        this.config = {
+            requestHandlers: {},
+        };
+    }
+    /**
+     * Add a request handler for a given request type.
+     *
+     * @param {String} requestType
+     * @param {Function} requestHandler
+     * @returns
+     * @memberOf SkillConfigurator
+     */
+    SkillConfigurator.prototype.on = function (requestType, requestHandler) {
+        if (!this.config.requestHandlers[requestType]) {
+            this.config.requestHandlers[requestType] = requestHandler;
+        }
+        return this;
+    };
+    /**
+     * Add LaunchRequest handler for clova request.
+     *
+     * @param requestHandler
+     */
+    SkillConfigurator.prototype.onLaunchRequest = function (requestHandler) {
+        this.on('LaunchRequest', requestHandler);
+        return this;
+    };
+    /**
+     * Add IntentRequest handler for clova request.
+     *
+     * @param requestHandler
+     */
+    SkillConfigurator.prototype.onIntentRequest = function (requestHandler) {
+        this.on('IntentRequest', requestHandler);
+        return this;
+    };
+    /**
+     * Add SessionEndedRequest handler for clova request.
+     *
+     * @param requestHandler
+     */
+    SkillConfigurator.prototype.onSessionEndedRequest = function (requestHandler) {
+        this.on('SessionEndedRequest', requestHandler);
+        return this;
+    };
+    /**
+     * Create esxpress route handler for dispatching request.
+     *
+     * @returns {Function}
+     * @memberOf SkillConfigurator
+     */
+    SkillConfigurator.prototype.handle = function () {
+        var _this = this;
+        return function (req, res) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var ctx, requestType, requestHandler, error_1;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        ctx = new context_1.Context(req.body);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 5, , 6]);
+                        requestType = ctx.requestObject.request.type;
+                        requestHandler = this.config.requestHandlers[requestType];
+                        if (!requestHandler) return [3 /*break*/, 3];
+                        return [4 /*yield*/, requestHandler.call(ctx, ctx)];
+                    case 2:
+                        _a.sent();
+                        res.json(ctx.responseObject);
+                        return [3 /*break*/, 4];
+                    case 3: throw new Error("Unable to find requestHandler for '" + requestType + "'");
+                    case 4: return [3 /*break*/, 6];
+                    case 5:
+                        error_1 = _a.sent();
+                        console.error(error_1.message);
+                        res.sendStatus(500);
+                        return [3 /*break*/, 6];
+                    case 6: return [2 /*return*/];
+                }
+            });
+        }); };
+    };
+    return SkillConfigurator;
+}());
+exports.SkillConfigurator = SkillConfigurator;
+var Client = /** @class */ (function () {
+    function Client() {
+    }
+    /**
+     * Create SkillConfigurator for clova skills.
+     *
+     * @returns SkillConfigurator
+     */
+    Client.configureSkill = function () {
+        return new SkillConfigurator();
+    };
+    return Client;
+}());
+exports.default = Client;
+//# sourceMappingURL=client.js.map
